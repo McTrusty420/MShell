@@ -55,33 +55,51 @@ int main() {
     // set the last part of argv to NULL
     argv[argc] = NULL;
 
-    // fork() clones the entire program, ie this program :) uses same amount of
-    // resources
-    pid_t pid = fork();
-
-    // pid 0 means the fork was successful and the child got the id 0, so we're
-    // running execvp only for the child otherwise we get the double execution
-    // bug;
-    if (pid == 0) {
-      // execvp is a wrapper for execve and requires the command - argv[0] - so
-      // that the program knows what it's gonna load and the command array -
-      // argv
-      // - so that the executed program, for example - ls, knows what arguments
-      // it has, which starts from argv[1];
-      if (execvp(argv[0], argv) == -1) {
-        fprintf(stderr, "%s %s\n", argv[0], strerror(errno));
-        _exit(127);
+    // builtin handling for cd, since cd won't work on a fork/child
+    // the child will change dir but that won't affect the parent
+    if (strcmp(argv[0], "cd") == 0) {
+      if (argv[1] == NULL) {
+        const char *home = getenv("HOME");
+        if (home == NULL) {
+          fprintf(stderr, "no home set\n");
+        }
+        chdir(home);
+        // fprintf(stderr, "no arguments\n");
+      } else if (chdir(argv[1]) != 0) {
+        fprintf(stderr, "%s %s\n", argv[1], strerror(errno));
       }
-      // If pid isn't 0 we just wait
-    } else if (pid > 0) {
-      int status;
-      // waits till pid dies and fills exit info to status, 0 means no special
-      // options (3rd argument is for options)
-      waitpid(pid, &status, 0);
+    }
+    // everything other than cd
+    else {
 
-      // if the fork  fails
-    } else {
-      fprintf(stderr, "fork failed\n");
+      // fork() clones the entire program, ie this program :) uses same amount
+      // of resources
+      pid_t pid = fork();
+
+      // pid 0 means the fork was successful and the child got the id 0, so
+      // we're running execvp only for the child otherwise we get the double
+      // execution bug;
+      if (pid == 0) {
+        // execvp is a wrapper for execve and requires the command - argv[0] -
+        // so that the program knows what it's gonna load and the command array
+        // - argv
+        // - so that the executed program, for example - ls, knows what
+        // arguments it has, which starts from argv[1];
+        if (execvp(argv[0], argv) == -1) {
+          fprintf(stderr, "%s %s\n", argv[0], strerror(errno));
+          _exit(127);
+        }
+        // If pid isn't 0 we just wait
+      } else if (pid > 0) {
+        int status;
+        // waits till pid dies and fills exit info to status, 0 means no special
+        // options (3rd argument is for options)
+        waitpid(pid, &status, 0);
+
+        // if the fork  fails
+      } else {
+        fprintf(stderr, "fork failed\n");
+      }
     }
   }
   // free mem taken by input
