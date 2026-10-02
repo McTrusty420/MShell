@@ -75,6 +75,8 @@ int main() {
       // If pid isn't 0 we just wait
     } else if (pid > 0) {
       int status;
+      // waits till pid dies and fills exit info to status, 0 means no special
+      // options (3rd argument is for options)
       waitpid(pid, &status, 0);
 
       // if the fork  fails
