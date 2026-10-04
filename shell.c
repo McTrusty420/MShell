@@ -58,7 +58,7 @@ int main() {
     // builtin handling for cd, since cd won't work on a fork/child
     // the child will change dir but that won't affect the parent
     if (strcmp(argv[0], "cd") == 0) {
-      if (argv[1] == NULL) {
+      if (argv[1] == NULL || strcmp(argv[1], "~")) {
         const char *home = getenv("HOME");
         if (home == NULL) {
           fprintf(stderr, "no home set\n");
@@ -67,6 +67,8 @@ int main() {
         // fprintf(stderr, "no arguments\n");
       } else if (chdir(argv[1]) != 0) {
         fprintf(stderr, "%s %s\n", argv[1], strerror(errno));
+      } else if (strcmp(argv[1], "..")) {
+        chdir();
       }
     }
     // everything other than cd
