@@ -13,6 +13,10 @@ int main() {
   size_t cap = 0;
   ssize_t len = 1;
 
+  char *pwd = getcwd(NULL, 0);
+
+  char *target = NULL;
+
   // getline requires somewhere to put data, something to store the capacity
   // to dynamically realloc mem, and a FILE/Stream to take input from
   while (1) {
@@ -58,17 +62,36 @@ int main() {
     // builtin handling for cd, since cd won't work on a fork/child
     // the child will change dir but that won't affect the parent
     if (strcmp(argv[0], "cd") == 0) {
-      if (argv[1] == NULL || strcmp(argv[1], "~")) {
-        const char *home = getenv("HOME");
-        if (home == NULL) {
+      fprintf(stdout, "%s is pwd\n", pwd);
+      if (argv[1] == NULL || strcmp(argv[1], "~") == 0) {
+        fprintf(stderr, "home branch\n");
+        target = getenv("HOME");
+        if (target == NULL) {
           fprintf(stderr, "no home set\n");
+          continue;
         }
-        chdir(home);
+        // pwd = getcwd(NULL, 0);
         // fprintf(stderr, "no arguments\n");
-      } else if (chdir(argv[1]) != 0) {
-        fprintf(stderr, "%s %s\n", argv[1], strerror(errno));
-      } else if (strcmp(argv[1], "..")) {
-        chdir();
+      } else if (strcmp(argv[1], "-") == 0) {
+        fprintf(stderr, "- branch");
+        target = pwd;
+        // pwd = getcwd(NULL, 0);
+      }
+      // else if (chdir(argv[1]) != 0) {
+      //      fprintf(stderr, "%s %s\n", argv[1], strerror(errno));
+      // }
+      else {
+        target = argv[1];
+        // pwd = getcwd(NULL, 0);
+      }
+
+      char *newPwd = getcwd(NULL, 0);
+      if (chdir(target) != 0) {
+        fprintf(stderr, "%s not found\n", argv[1]);
+        free(newPwd);
+      } else {
+        free(pwd);
+        pwd = newPwd;
       }
     }
     // everything other than cd
@@ -83,7 +106,8 @@ int main() {
       // execution bug;
       if (pid == 0) {
         // execvp is a wrapper for execve and requires the command - argv[0] -
-        // so that the program knows what it's gonna load and the command array
+        // so that the program knows what it's gonna load and the command
+        // array
         // - argv
         // - so that the executed program, for example - ls, knows what
         // arguments it has, which starts from argv[1];
@@ -94,8 +118,8 @@ int main() {
         // If pid isn't 0 we just wait
       } else if (pid > 0) {
         int status;
-        // waits till pid dies and fills exit info to status, 0 means no special
-        // options (3rd argument is for options)
+        // waits till pid dies and fills exit info to status, 0 means no
+        // special options (3rd argument is for options)
         waitpid(pid, &status, 0);
 
         // if the fork  fails
