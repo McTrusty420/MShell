@@ -13,6 +13,9 @@ int main() {
   size_t cap = 0;
   ssize_t len = 1;
 
+  // setting status code
+  int last_status = 0;
+
   // for tracking prevDir
   char *pwd = getcwd(NULL, 0);
 
@@ -82,6 +85,7 @@ int main() {
       if (chdir(target) != 0) {
         fprintf(stderr, "%s not found\n", argv[1]);
         free(newPwd);
+        last_status = 1;
       } else { // if it is found, old pwd is updated to newPwd
         free(pwd);
         pwd = newPwd;
@@ -113,13 +117,22 @@ int main() {
         int status;
         // waits till pid dies and fills exit info to status, 0 means no
         // special options (3rd argument is for options)
-        waitpid(pid, &status, 0);
+        waitpid(pid, &status, 0); // status stores a bitfield that contains info
+                                  // on how the child exited and the exit code
+        if (WIFEXITED(status)) { // WIFEXITED is wait if exited, tells us if the
+                                 // child exited normally
+          last_status = WEXITSTATUS(status); // WEXITSTATUS is wait exit status,
+                                             // tells us the exit code
+        }
 
         // if the fork  fails
       } else {
         fprintf(stderr, "fork failed\n");
       }
+      // if (strcmp(argv[len - 1], ";") == 0) {
+      // }
     }
+    fprintf(stdout, "%d\n", last_status);
   }
   // free mem taken by input
   free(input);
