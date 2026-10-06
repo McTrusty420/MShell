@@ -44,12 +44,15 @@ int main() {
     int argc = 0;
 
     // loop to change spaces or tabs to EOL
+    // the tokenizer
     for (size_t i = 0; input[i] != '\0'; i++) {
       char c = input[i];
       // if space or tab, replace with EOL
       if (c == ' ' || c == '\t') {
         input[i] = '\0';
         in_word = 0;
+      } else if (c == ';') {
+
       }
       // if we are in a word, we store the address of the beggining to that word
       // in argv then post-increment argc
@@ -134,8 +137,6 @@ int main() {
       } else {
         fprintf(stderr, "fork failed\n");
       }
-      // if (strcmp(argv[line - 1], ";") == 0) {
-      // }
     }
     fprintf(stdout, "%d\n", last_status);
   }
