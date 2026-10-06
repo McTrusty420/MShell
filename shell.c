@@ -11,7 +11,7 @@ int main() {
   char *input = NULL;
   // cap required for getlin() to track dynamic alloc with realloc
   size_t cap = 0;
-  ssize_t len = 1;
+  ssize_t line = 1;
 
   // setting status code
   int last_status = 0;
@@ -25,13 +25,13 @@ int main() {
   // to dynamically realloc mem, and a FILE/Stream to take input from
   while (1) {
     printf("$ ");
-    len = getline(&input, &cap, stdin);
-    if (len == -1)
+    line = getline(&input, &cap, stdin);
+    if (line == -1)
       break;
 
     // stripping the input of any \n
-    if (len > 0 && input[len - 1] == '\n') {
-      input[len - 1] = '\0';
+    if (line > 0 && input[line - 1] == '\n') {
+      input[line - 1] = '\0';
     }
     // flushing out any remaining $, since it doesn't terminate with \n the  $
     // remains in the buffer (C string goof)
@@ -60,8 +60,13 @@ int main() {
           break;
       }
     }
+
     // set the last part of argv to NULL
     argv[argc] = NULL;
+
+    if (argc == 0) {
+      continue;
+    }
 
     // builtin handling for cd, since cd won't work on a fork/child
     // the child will change dir but that won't affect the parent
@@ -129,7 +134,7 @@ int main() {
       } else {
         fprintf(stderr, "fork failed\n");
       }
-      // if (strcmp(argv[len - 1], ";") == 0) {
+      // if (strcmp(argv[line - 1], ";") == 0) {
       // }
     }
     fprintf(stdout, "%d\n", last_status);
