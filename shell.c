@@ -1,3 +1,4 @@
+#include "tokenizer.h"
 #include <errno.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -11,7 +12,7 @@ int main() {
   char *input = NULL;
   // cap required for getlin() to track dynamic alloc with realloc
   size_t cap = 0;
-  ssize_t line = 1;
+  ssize_t nread = -1;
 
   // setting status code
   int last_status = 0;
@@ -25,13 +26,13 @@ int main() {
   // to dynamically realloc mem, and a FILE/Stream to take input from
   while (1) {
     printf("$ ");
-    line = getline(&input, &cap, stdin);
-    if (line == -1)
+    nread = getline(&input, &cap, stdin);
+    if (nread == -1)
       break;
 
     // stripping the input of any \n
-    if (line > 0 && input[line - 1] == '\n') {
-      input[line - 1] = '\0';
+    if (nread > 0 && input[nread - 1] == '\n') {
+      input[nread - 1] = '\0';
     }
     // flushing out any remaining $, since it doesn't terminate with \n the  $
     // remains in the buffer (C string goof)
@@ -40,32 +41,8 @@ int main() {
     int in_word = 0;
     // buffer to split words
     char *argv[64];
-    // index to buffer argv
-    int argc = 0;
 
-    // loop to change spaces or tabs to EOL
-    // the tokenizer
-    for (size_t i = 0; input[i] != '\0'; i++) {
-      char c = input[i];
-      // if space or tab, replace with EOL
-      if (c == ' ' || c == '\t') {
-        input[i] = '\0';
-        in_word = 0;
-      } else if (c == ';') {
-
-      }
-      // if we are in a word, we store the address of the beggining to that word
-      // in argv then post-increment argc
-      else if (!in_word) {
-        argv[argc++] = &input[i];
-        in_word = 1;
-        if (argc >= 63)
-          break;
-      }
-    }
-
-    // set the last part of argv to NULL
-    argv[argc] = NULL;
+    int argc = tokenizer(input, argv, 64);
 
     if (argc == 0) {
       continue;
@@ -142,5 +119,6 @@ int main() {
   }
   // free mem taken by input
   free(input);
+  free(pwd);
   return 0;
 }
