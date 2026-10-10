@@ -9,8 +9,6 @@ int tokenizer(char *input, char *argv[], size_t argv_max) {
   // index to buffer argv
   int argc = 0;
 
-  int end_mark = 1;
-
   // loop to change spaces or tabs to EOL
   // the tokenizer
   for (size_t i = 0; input[i] != '\0'; i++) {
@@ -18,23 +16,18 @@ int tokenizer(char *input, char *argv[], size_t argv_max) {
     // if space or tab, replace with EOL
     if (c == ' ' || c == '\t' || c == '\n' || c == ';') {
       input[i] = '\0';
-      if (c == ';')
+      // checking if we encounter a ; and adding ; to argv if yes
+      if (c == ';' && argc >= argv_max) {
         argv[argc++] = ";";
+      }
       // end_mark = 0;
       in_word = 0;
     }
     // if we are in a word, we store the address of the beggining to that word
     // in argv then post-increment argc
     else if (!in_word) {
-      printf("start of in word\n");
       argv[argc++] = &input[i];
-      printf("%s argc=%d\n", argv[argc - 1], argc - 1);
       in_word = 1;
-      // if (!end_mark) {
-      //   printf("start of end mark\n");
-      //   argv[argc++] = ";";
-      //   printf("%s argc=%d\n", argv[argc - 1], argc - 1);
-      // }
       if (argc >= argv_max)
         break;
     }

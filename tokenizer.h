@@ -12,7 +12,7 @@
 // requirements:
 // input has to be a writeable buffer
 // token pointers are valid only until input is modified again (they point
-// into input)
+// into input, except in the case of ;)
 //
 // by design:
 // argv[0 to argc-1]: contains all the tokens
