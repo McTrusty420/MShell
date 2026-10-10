@@ -44,6 +44,10 @@ int main() {
 
     int argc = tokenizer(input, argv, 64);
 
+    for (int i = 0; i < argc; i++) {
+      fprintf(stdout, "argv:%s\n", argv[i]);
+    }
+
     if (argc == 0) {
       continue;
     }
